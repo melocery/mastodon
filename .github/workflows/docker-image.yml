@@ -16,7 +16,7 @@ jobs:
       - name: Push to Docker Hub
         uses: docker/build-push-action@v1
         with:
-          username: $secrets.DOCKER_USERNAME
-          password: $secrets.DOCKER_PASSWORD
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
           repository: melocery/mastodon
           tags: v3.5.1
