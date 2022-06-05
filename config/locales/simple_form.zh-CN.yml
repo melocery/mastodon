@@ -193,7 +193,7 @@ zh-CN:
       invite:
         comment: 评论
       invite_request:
-        text: 你为什么想要加入？
+        text: 咖啡馆内位置有限，老板将会严格审核您的入站申请，请阅读服务器规则和站点简介之后认真填写注册理由。
       ip_block:
         comment: 备注
         ip: IP 地址
