@@ -2,4 +2,4 @@ default: styles/application.scss
 contrast: styles/contrast.scss
 mastodon-light: styles/mastodon-light.scss
 black-cat: styles/black-cat.scss
-cafe: styles/café.scss
+cafe: styles/cafe.scss
