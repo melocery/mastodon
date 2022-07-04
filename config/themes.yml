@@ -2,8 +2,8 @@ default: styles/application.scss
 contrast: styles/contrast.scss
 mastodon-light: styles/mastodon-light.scss
 witches-town: styles/witches-town.scss
-win95: styles/win95.scss
+#win95: styles/win95.scss
 strawberry: styles/strawberry.scss
-neoncity: styles/neon-city.scss
+#neoncity: styles/neon-city.scss
 # black-cat: styles/black-cat.scss
 # cafe: styles/cafe.scss
