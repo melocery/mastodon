@@ -2,8 +2,12 @@ default: styles/application.scss
 contrast: styles/contrast.scss
 mastodon-light: styles/mastodon-light.scss
 witches-town: styles/witches-town.scss
-win95: styles/win95.scss
+# win95: styles/win95.scss
 strawberry: styles/strawberry.scss
+ubuntu-light: styles/ubuntu-light.scss
+ubuntu-terminal: styles/ubuntu-terminal.scss
+nga: styles/nga.scss
+forest: styles/forest.scss
 # neoncity: styles/neon-city.scss
 # black-cat: styles/black-cat.scss
 # cafe: styles/cafe.scss
