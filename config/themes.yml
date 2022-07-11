@@ -11,7 +11,6 @@ forest: styles/forest.scss
 pastel-gradient: styles/pastel-gradient.scss
 luxury: styles/luxury.scss
 sakura: styles/sakura.scss
-mailer: styles/mailer.scss
 cyberpunk-neon: styles/cyberpunk-neon.scss
 # neoncity: styles/neon-city.scss
 # black-cat: styles/black-cat.scss
