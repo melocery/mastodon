@@ -12,6 +12,8 @@ pastel-gradient: styles/pastel-gradient.scss
 luxury: styles/luxury.scss
 sakura: styles/sakura.scss
 cyberpunk-neon: styles/cyberpunk-neon.scss
+deep-green: styles/deep-green.scss
+sleeping-town: styles/sleeping-town.scss
 # neoncity: styles/neon-city.scss
 # black-cat: styles/black-cat.scss
 # cafe: styles/cafe.scss
