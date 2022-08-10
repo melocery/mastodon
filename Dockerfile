@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-c"]
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 # Install Node v16 (LTS)
-ENV NODE_VER="16.14.2"
+ENV NODE_VER="16.15.1"
 RUN ARCH= && \
     dpkgArch="$(dpkg --print-architecture)" && \
   case "${dpkgArch##*-}" in \
@@ -48,7 +48,7 @@ ENV PATH="${PATH}:/opt/ruby/bin:/opt/node/bin"
 
 RUN npm install -g npm@latest && \
 	npm install -g yarn && \
-	gem install bundler -v 2.1.4 && \
+	gem install bundler && \
 	apt-get update && \
 	apt-get install -y --no-install-recommends git libicu-dev libidn11-dev \
 	libpq-dev shared-mime-info
