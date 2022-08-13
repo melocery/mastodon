@@ -20,3 +20,4 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: melocery/mastodon
           tags: latest
+          tags: themes
