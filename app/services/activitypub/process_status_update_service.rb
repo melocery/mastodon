@@ -3,8 +3,9 @@
 class ActivityPub::ProcessStatusUpdateService < BaseService
   include JsonLdHelper
   include Redisable
+  include Lockable
 
-  def call(status, json)
+  def call(status, json, request_id: nil)
     raise ArgumentError, 'Status has unsaved changes' if status.changed?
 
     @json                      = json
@@ -14,6 +15,7 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
     @account                   = status.account
     @media_attachments_changed = false
     @poll_changed              = false
+    @request_id                = request_id
 
     # Only native types can be updated at the moment
     return @status if !expected_type? || already_updated_more_recently?
@@ -33,41 +35,32 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
     last_edit_date = @status.edited_at.presence || @status.created_at
 
     # Only allow processing one create/update per status at a time
-    RedisLock.acquire(lock_options) do |lock|
-      if lock.acquired?
-        Status.transaction do
-          record_previous_edit!
-          update_media_attachments!
-          update_poll!
-          update_immediate_attributes!
-          update_metadata!
-          create_edits!
-        end
-
-        queue_poll_notifications!
-
-        next unless significant_changes?
-
-        reset_preview_card!
-        broadcast_updates!
-      else
-        raise Mastodon::RaceConditionError
+    with_lock("create:#{@uri}") do
+      Status.transaction do
+        record_previous_edit!
+        update_media_attachments!
+        update_poll!
+        update_immediate_attributes!
+        update_metadata!
+        create_edits!
       end
+
+      queue_poll_notifications!
+
+      next unless significant_changes?
+
+      reset_preview_card!
+      broadcast_updates!
     end
 
     forward_activity! if significant_changes? && @status_parser.edited_at > last_edit_date
   end
 
   def handle_implicit_update!
-    RedisLock.acquire(lock_options) do |lock|
-      if lock.acquired?
-        update_poll!(allow_significant_changes: false)
-      else
-        raise Mastodon::RaceConditionError
-      end
+    with_lock("create:#{@uri}") do
+      update_poll!(allow_significant_changes: false)
+      queue_poll_notifications!
     end
-
-    queue_poll_notifications!
   end
 
   def update_media_attachments!
@@ -100,7 +93,13 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
 
         next if unsupported_media_type?(media_attachment_parser.file_content_type) || skip_download?
 
-        RedownloadMediaWorker.perform_async(media_attachment.id) if media_attachment.remote_url_previously_changed? || media_attachment.thumbnail_remote_url_previously_changed?
+        begin
+          media_attachment.download_file! if media_attachment.remote_url_previously_changed?
+          media_attachment.download_thumbnail! if media_attachment.thumbnail_remote_url_previously_changed?
+          media_attachment.save
+        rescue Mastodon::UnexpectedResponseError, HTTP::TimeoutError, HTTP::ConnectionError, OpenSSL::SSL::SSLError
+          RedownloadMediaWorker.perform_in(rand(30..600).seconds, media_attachment.id)
+        end
       rescue Addressable::URI::InvalidURIError => e
         Rails.logger.debug "Invalid URL in attachment: #{e}"
       end
@@ -193,7 +192,7 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
       next if href.blank?
 
       account   = ActivityPub::TagManager.instance.uri_to_resource(href, Account)
-      account ||= ActivityPub::FetchRemoteAccountService.new.call(href)
+      account ||= ActivityPub::FetchRemoteAccountService.new.call(href, request_id: @request_id)
 
       next if account.nil?
 
@@ -239,10 +238,6 @@ class ActivityPub::ProcessStatusUpdateService < BaseService
 
   def expected_type?
     equals_or_includes_any?(@json['type'], %w(Note Question))
-  end
-
-  def lock_options
-    { redis: redis, key: "create:#{@uri}", autorelease: 15.minutes.seconds }
   end
 
   def record_previous_edit!

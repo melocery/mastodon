@@ -23,7 +23,7 @@ module FormattingHelper
 
     before_html = begin
       if status.spoiler_text?
-        "<p><strong>#{I18n.t('rss.content_warning', locale: valid_locale_or_nil(status.language))}</strong> #{h(status.spoiler_text)}</p><hr />"
+        "<p><strong>#{I18n.t('rss.content_warning', locale: available_locale_or_nil(status.language) || I18n.default_locale)}</strong> #{h(status.spoiler_text)}</p><hr />"
       else
         ''
       end
@@ -49,6 +49,10 @@ module FormattingHelper
   end
 
   def account_field_value_format(field, with_rel_me: true)
-    html_aware_format(field.value, field.account.local?, with_rel_me: with_rel_me, with_domains: true, multiline: false)
+    if field.verified? && !field.account.local?
+      TextFormatter.shortened_link(field.value_for_verification)
+    else
+      html_aware_format(field.value, field.account.local?, with_rel_me: with_rel_me, with_domains: true, multiline: false)
+    end
   end
 end

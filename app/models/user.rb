@@ -53,6 +53,7 @@ class User < ApplicationRecord
   include Settings::Extend
   include UserRoles
   include Redisable
+  include LanguagesHelper
 
   # The home and list feeds will be stored in Redis for this amount
   # of time, and status fan-out to followers will include only people
@@ -248,7 +249,7 @@ class User < ApplicationRecord
   end
 
   def preferred_posting_language
-    settings.default_language || locale
+    valid_locale_cascade(settings.default_language, locale)
   end
 
   def setting_default_privacy
@@ -441,10 +442,13 @@ class User < ApplicationRecord
   def prepare_new_user!
     BootstrapTimelineWorker.perform_async(account_id)
     ActivityTracker.increment('activity:accounts:local')
+    ActivityTracker.record('activity:logins', id)
     UserMailer.welcome(self).deliver_later
   end
 
   def prepare_returning_user!
+    return unless confirmed?
+
     ActivityTracker.record('activity:logins', id)
     regenerate_feed! if needs_feed_update?
   end
