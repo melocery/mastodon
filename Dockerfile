@@ -18,13 +18,14 @@ RUN ARCH= && \
     *) echo "unsupported architecture"; exit 1 ;; \
   esac && \
     echo "Etc/UTC" > /etc/localtime && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends ca-certificates wget python apt-utils && \
-  cd ~ && \
-  wget -q https://nodejs.org/download/release/v$NODE_VER/node-v$NODE_VER-linux-$ARCH.tar.gz && \
-  tar xf node-v$NODE_VER-linux-$ARCH.tar.gz && \
-  rm node-v$NODE_VER-linux-$ARCH.tar.gz && \
-  mv node-v$NODE_VER-linux-$ARCH /opt/node
+	apt-get update && \
+	apt-get -yq dist-upgrade && \
+	apt-get install -y --no-install-recommends ca-certificates wget python apt-utils && \
+	cd ~ && \
+	wget -q https://nodejs.org/download/release/v$NODE_VER/node-v$NODE_VER-linux-$ARCH.tar.gz && \
+	tar xf node-v$NODE_VER-linux-$ARCH.tar.gz && \
+	rm node-v$NODE_VER-linux-$ARCH.tar.gz && \
+	mv node-v$NODE_VER-linux-$ARCH /opt/node
 
 # Install Ruby 3.0
 ENV RUBY_VER="3.0.6"
@@ -46,12 +47,12 @@ RUN apt-get update && \
 
 ENV PATH="${PATH}:/opt/ruby/bin:/opt/node/bin"
 
-RUN npm install -g npm@latest && \
-  npm install -g yarn && \
-  gem install bundler -v 2.1.4 && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends git libicu-dev libidn11-dev \
-  libpq-dev shared-mime-info
+RUN npm install -g npm@9 && \
+	npm install -g yarn && \
+	gem install bundler && \
+	apt-get update && \
+	apt-get install -y --no-install-recommends git libicu-dev libidn11-dev \
+	libpq-dev shared-mime-info
 
 COPY Gemfile* package.json yarn.lock /opt/mastodon/
 
