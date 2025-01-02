@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+MAX_PINS = 10
 
 RSpec.describe StatusPinValidator, type: :validator do
   describe '#validate' do
@@ -45,8 +46,8 @@ RSpec.describe StatusPinValidator, type: :validator do
       end
     end
 
-    context 'pin.account.status_pins.count > 4 && pin.account.local?' do
-      let(:count) { 5 }
+    context 'pin.account.status_pins.count >= MAX_PINS && pin.account.local?' do
+      let(:count) { MAX_PINS }
       let(:local) { true }
 
       it 'calls errors.add' do
